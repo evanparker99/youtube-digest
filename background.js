@@ -234,7 +234,7 @@ async function readBoundedAiResponse(response, onActivity) {
  * Chrome's Side Panel API lets us show a persistent panel alongside the page.
  */
 chrome.action.onClicked.addListener((tab) => {
-  if (!(tab.url || "").startsWith("https://www.youtube.com")) {
+  if (!YTD_SETTINGS.isSupportedVideoPage(tab.url)) {
     void updatePanelForTab(tab.id, tab.url, tab.windowId);
     return;
   }
@@ -292,8 +292,7 @@ async function closePanelForTab(tabId, windowId) {
 }
 
 async function updatePanelForTab(tabId, url, windowId) {
-  const isYouTube = (url || "").startsWith("https://www.youtube.com");
-  if (!isYouTube) {
+  if (!YTD_SETTINGS.isSupportedVideoPage(url)) {
     // Close the visible instance first. Then disable this tab so Chrome cannot
     // reopen the global default panel as navigation settles.
     await closePanelForTab(tabId, windowId);
@@ -520,8 +519,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           tabs[0]?.url,
         );
 
+        // The front tab is a supported mirror (e.g. HackerTube) with no
+        // content script. Don't fall through to some other YouTube tab, which
+        // would seek or highlight a video the user isn't watching.
+        if (tabs[0] && YTD_SETTINGS.isHackerTubePage(tabs[0].url)) {
+          sendResponse({
+            success: false,
+            error: "Page controls are only available on youtube.com",
+          });
+          return;
+        }
+
         // If no YouTube tab found, try broader query
-        if (!tabs[0] || !tabs[0].url?.includes("youtube.com")) {
+        if (!tabs[0] || !YTD_SETTINGS.isYouTubePage(tabs[0].url)) {
           tabs = await chrome.tabs.query({
             url: "https://www.youtube.com/*",
             active: true,

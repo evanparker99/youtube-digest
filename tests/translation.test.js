@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
+const realSettings = require("../settings.js");
 
 const root = path.resolve(__dirname, "..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
@@ -128,6 +129,10 @@ function loadBackgroundHelpers({
       tabs: { onUpdated: listeners, onActivated: listeners },
     },
     YTD_SETTINGS: {
+      isYouTubePage: realSettings.isYouTubePage,
+      isHackerTubePage: realSettings.isHackerTubePage,
+      isSupportedVideoPage: realSettings.isSupportedVideoPage,
+      extractVideoId: realSettings.extractVideoId,
       STORAGE_KEY: "ytd_settings",
       normalize: (value) => value,
       chatCompletionsUrl: (baseUrl) => `${baseUrl}/chat/completions`,
@@ -177,6 +182,23 @@ test("a global panel closes by window when the tab close is rejected", async () 
     ["close", { tabId: 17 }],
     ["close", { windowId: 4 }],
     ["setOptions", { tabId: 17, enabled: false }],
+  ]);
+});
+
+test("the panel stays enabled on HackerTube watch pages", async () => {
+  const calls = [];
+  const background = loadBackgroundHelpers({
+    sidePanel: {
+      setPanelBehavior() {},
+      close: async (options) => calls.push(["close", options]),
+      setOptions: async (options) => calls.push(["setOptions", options]),
+    },
+  });
+
+  await background.updatePanelForTab(17, "https://hackertube.org/watch/yY96hTb8WgI", 4);
+
+  assert.deepEqual(JSON.parse(JSON.stringify(calls)), [
+    ["setOptions", { tabId: 17, path: "sidepanel.html", enabled: true }],
   ]);
 });
 

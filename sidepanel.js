@@ -339,7 +339,7 @@ function panelIsShowingResults() {
  * refresh the digest when the video changed.
  */
 function handleFrontTabUrl(url) {
-  if (!(url || "").startsWith("https://www.youtube.com")) {
+  if (!YTD_SETTINGS.isSupportedVideoPage(url)) {
     // Start the position save, then close in this same event callback. Chrome
     // does not reliably honor window.close() after an asynchronous wait.
     void saveCurrentTranscriptViewState();
@@ -347,7 +347,7 @@ function handleFrontTabUrl(url) {
     return;
   }
 
-  const newVideoId = extractVideoId(url);
+  const newVideoId = YTD_SETTINGS.extractVideoId(url);
   // Refresh when the video changed, or when we're not currently showing
   // results (e.g. user went home, then clicked back into the same video).
   if (newVideoId !== currentVideoId || !panelIsShowingResults()) {
@@ -490,17 +490,30 @@ async function checkCurrentTab() {
       return;
     }
 
-    if (!tab.url.startsWith("https://www.youtube.com")) {
+    if (!YTD_SETTINGS.isSupportedVideoPage(tab.url)) {
       handleFrontTabUrl(tab.url);
       return;
     }
 
-    // Store the tab ID for reliable messaging later
-    youtubeTabId = tab.id;
+    const isYouTube = YTD_SETTINGS.isYouTubePage(tab.url);
 
-    const videoId = extractVideoId(tab.url);
+    // Store the tab ID for reliable messaging later. Mirrors such as
+    // HackerTube have no content script, so there is nothing to message.
+    youtubeTabId = isYouTube ? tab.id : null;
 
-    if (videoId) {
+    const videoId = YTD_SETTINGS.extractVideoId(tab.url);
+
+    if (videoId && !isYouTube) {
+      // HackerTube embeds the YouTube player in a cross-origin iframe, so the
+      // page can't be scraped. Its tab title is "<video title> - HackerTube".
+      currentVideoUrl = tab.url;
+      const title = (tab.title || "").replace(/\s+-\s+HackerTube$/, "");
+      currentVideoTitle = title === "HackerTube" ? "" : title;
+      currentChannelName = "";
+      currentVideoDescription = "";
+      currentVideoDuration = 0;
+      startDigest(videoId, tab.url);
+    } else if (videoId) {
       currentVideoUrl = tab.url;
 
       try {
@@ -531,31 +544,6 @@ async function checkCurrentTab() {
   } catch (error) {
     console.error("Tab check error:", error);
     showState("welcome");
-  }
-}
-
-function extractVideoId(url) {
-  try {
-    const urlObj = new URL(url);
-
-    if (
-      urlObj.hostname.includes("youtube.com") &&
-      urlObj.searchParams.has("v")
-    ) {
-      return urlObj.searchParams.get("v");
-    }
-
-    if (urlObj.hostname === "youtu.be") {
-      return urlObj.pathname.slice(1);
-    }
-
-    if (urlObj.pathname.startsWith("/embed/")) {
-      return urlObj.pathname.split("/")[2];
-    }
-
-    return null;
-  } catch {
-    return null;
   }
 }
 

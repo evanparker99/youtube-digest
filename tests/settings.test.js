@@ -61,3 +61,27 @@ test("Supadata receives a canonical YouTube URL", () => {
     /Invalid YouTube video ID/,
   );
 });
+
+test("video pages: YouTube and HackerTube are supported, others are not", () => {
+  assert.equal(settings.isSupportedVideoPage("https://www.youtube.com/watch?v=yY96hTb8WgI"), true);
+  assert.equal(settings.isSupportedVideoPage("https://hackertube.org/watch/yY96hTb8WgI"), true);
+  assert.equal(settings.isSupportedVideoPage("https://www.hackertube.org/"), true);
+  assert.equal(settings.isSupportedVideoPage("https://hackertube.org.evil.example/watch/yY96hTb8WgI"), false);
+  assert.equal(settings.isSupportedVideoPage("http://hackertube.org/watch/yY96hTb8WgI"), false);
+  assert.equal(settings.isSupportedVideoPage("https://example.com/"), false);
+  assert.equal(settings.isSupportedVideoPage(""), false);
+  assert.equal(settings.isYouTubePage("https://hackertube.org/watch/yY96hTb8WgI"), false);
+});
+
+test("extractVideoId reads YouTube and HackerTube URLs", () => {
+  const id = "yY96hTb8WgI";
+  assert.equal(settings.extractVideoId(`https://www.youtube.com/watch?v=${id}&t=30s`), id);
+  assert.equal(settings.extractVideoId(`https://youtu.be/${id}`), id);
+  assert.equal(settings.extractVideoId(`https://www.youtube.com/embed/${id}`), id);
+  assert.equal(settings.extractVideoId(`https://hackertube.org/watch/${id}`), id);
+  assert.equal(settings.extractVideoId(`https://hackertube.org/watch/${id}?ref=home`), id);
+  assert.equal(settings.extractVideoId(`https://hackertube.org/#/watch/${id}`), id);
+  assert.equal(settings.extractVideoId("https://hackertube.org/"), null);
+  assert.equal(settings.extractVideoId("https://hackertube.org/watch/bad<id>"), null);
+  assert.equal(settings.extractVideoId("https://www.youtube.com/"), null);
+});

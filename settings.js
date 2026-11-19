@@ -48,10 +48,67 @@ var YTD_SETTINGS = (() => {
 
   function canonicalYouTubeUrl(videoId) {
     const normalized = String(videoId || "").trim();
-    if (!/^[A-Za-z0-9_-]{6,20}$/.test(normalized)) {
+    if (!VIDEO_ID_PATTERN.test(normalized)) {
       throw new Error("Invalid YouTube video ID.");
     }
     return `https://www.youtube.com/watch?v=${normalized}`;
+  }
+
+  const VIDEO_ID_PATTERN = /^[A-Za-z0-9_-]{6,20}$/;
+
+  function parseUrl(url) {
+    try {
+      return new URL(String(url || ""));
+    } catch {
+      return null;
+    }
+  }
+
+  /** True for pages on www.youtube.com, where content.js runs. */
+  function isYouTubePage(url) {
+    const parsed = parseUrl(url);
+    return parsed?.protocol === "https:" && parsed.hostname === "www.youtube.com";
+  }
+
+  /**
+   * True for HackerTube (hackertube.org), a front end that embeds YouTube
+   * videos and uses YouTube video IDs in its /watch/<id> URLs.
+   */
+  function isHackerTubePage(url) {
+    const parsed = parseUrl(url);
+    return (
+      parsed?.protocol === "https:" &&
+      (parsed.hostname === "hackertube.org" ||
+        parsed.hostname === "www.hackertube.org")
+    );
+  }
+
+  /** Pages the side panel can digest: YouTube itself or a supported mirror. */
+  function isSupportedVideoPage(url) {
+    return isYouTubePage(url) || isHackerTubePage(url);
+  }
+
+  /** Returns the YouTube video ID for a supported page URL, or null. */
+  function extractVideoId(url) {
+    const parsed = parseUrl(url);
+    if (!parsed) return null;
+
+    let id = null;
+    if (isHackerTubePage(url)) {
+      // Current links are /watch/<id>; older ones were /#/watch/<id>.
+      const match =
+        parsed.pathname.match(/^\/watch\/([^/]+)/) ||
+        parsed.hash.match(/^#\/watch\/([^/?]+)/);
+      id = match ? match[1] : null;
+    } else if (parsed.hostname.endsWith("youtube.com") && parsed.searchParams.has("v")) {
+      id = parsed.searchParams.get("v");
+    } else if (parsed.hostname === "youtu.be") {
+      id = parsed.pathname.slice(1);
+    } else if (parsed.pathname.startsWith("/embed/")) {
+      id = parsed.pathname.split("/")[2];
+    }
+
+    return id && VIDEO_ID_PATTERN.test(id) ? id : null;
   }
 
   return {
@@ -62,6 +119,10 @@ var YTD_SETTINGS = (() => {
     migrateLegacyCustom,
     chatCompletionsUrl,
     canonicalYouTubeUrl,
+    isYouTubePage,
+    isHackerTubePage,
+    isSupportedVideoPage,
+    extractVideoId,
   };
 })();
 
