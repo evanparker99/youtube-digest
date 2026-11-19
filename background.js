@@ -38,6 +38,9 @@ async function getSettings() {
 
 const promptFileCache = new Map();
 
+// Side panel actions the HackerTube embedded player frame (embed.js) answers.
+const HACKERTUBE_RELAY_ACTIONS = new Set(["getCurrentTime", "seekTo"]);
+
 async function loadPromptSection(fileName, heading, variables = {}) {
   let markdown = promptFileCache.get(fileName);
   if (!markdown) {
@@ -519,14 +522,26 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           tabs[0]?.url,
         );
 
-        // The front tab is a supported mirror (e.g. HackerTube) with no
-        // content script. Don't fall through to some other YouTube tab, which
-        // would seek or highlight a video the user isn't watching.
+        // HackerTube plays videos in a youtube-nocookie.com iframe, where
+        // embed.js answers getCurrentTime and seekTo. Everything else needs
+        // youtube.com. Never fall through to some other YouTube tab, which
+        // would seek or track a video the user isn't watching.
         if (tabs[0] && YTD_SETTINGS.isHackerTubePage(tabs[0].url)) {
-          sendResponse({
-            success: false,
-            error: "Page controls are only available on youtube.com",
-          });
+          const action = message.payload?.action;
+          if (!HACKERTUBE_RELAY_ACTIONS.has(action)) {
+            sendResponse({
+              success: false,
+              error: "This control is only available on youtube.com",
+            });
+            return;
+          }
+          // No frameId: the message reaches every frame in the tab, and only
+          // the embedded player frame answers.
+          const response = await chrome.tabs.sendMessage(
+            tabs[0].id,
+            message.payload,
+          );
+          sendResponse({ success: true, response });
           return;
         }
 

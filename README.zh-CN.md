@@ -125,16 +125,15 @@ YouTube Digest 强制使用 Supadata 的 `mode=native`，不会在没有原生�
 
 ### HackerTube
 
-[HackerTube](https://hackertube.org) 是一个通过内嵌播放器播放 YouTube 视频的网站，网址里使用的就是 YouTube 视频 ID。在 HackerTube 视频页面点击 YouTube Digest 图标即可打开侧边栏。字幕、翻译、Overview、内容讲解和 Notes 都可以使用，视频标题从页面读取。
+[HackerTube](https://hackertube.org) 是一个通过内嵌播放器播放 YouTube 视频的网站，网址里使用的就是 YouTube 视频 ID。在 HackerTube 视频页面点击 YouTube Digest 图标即可打开侧边栏。字幕、翻译、Overview、内容讲解和 Notes 都可以使用，视频标题从页面读取。视频开始播放后，字幕会跟随播放进度高亮滚动，点击时间戳也会跳转视频。
 
-HackerTube 的播放器嵌在一个独立的 YouTube 框架里，扩展不会操作它，因此以下功能只能在 YouTube 页面上使用：
+以下功能仍然只能在 YouTube 页面上使用：
 
 - 页面上不会出现 **Digest** 按钮和记笔记按钮。
-- 点击时间戳不会跳转视频，字幕也不会跟随播放进度滚动。
 - 不会读取频道名和视频简介，AI 概览只依据标题和字幕。
 - 保存的笔记和时间戳链接指向 YouTube 上的原视频。
 
-使用 HackerTube 不需要额外的 Chrome 权限。
+跟随播放依靠 HackerTube 内嵌 YouTube 播放器（`youtube-nocookie.com/embed`）里的一个小脚本。它只读取当前播放时间和执行跳转，播放器嵌在其他网站上时不会启用。Chrome 会把它显示为对 `youtube-nocookie.com` 的访问权限。
 
 ## Supadata 免费额度和请求成本
 

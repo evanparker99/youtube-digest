@@ -72,6 +72,7 @@ YouTube Digest uses Chrome permissions for these purposes:
 - `tabs`: identify and interact with the active YouTube tab.
 - `scripting`: coordinate the extension's YouTube page controls.
 - YouTube host access: read the active video's URL and metadata and provide timestamp controls.
+- YouTube embedded player access (`youtube-nocookie.com/embed`): on HackerTube watch pages only, read the player's current time and seek to a timestamp. The script does nothing when the player is embedded on any other site.
 - Supadata host access: retrieve transcripts.
 - DeepSeek host access: provide AI overviews, explanations, translation, and note polishing through DeepSeek V4 Flash.
 

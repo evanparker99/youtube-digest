@@ -123,16 +123,15 @@ YouTube Digest forces Supadata's `mode=native`. It does not request AI-generated
 
 ### HackerTube
 
-[HackerTube](https://hackertube.org) is a video site that plays YouTube videos through an embedded player and uses the YouTube video ID in its URLs. On a HackerTube watch page, click the YouTube Digest icon to open the side panel. The transcript, translation, Overview, explanations, and Notes all work, and the video title comes from the page.
+[HackerTube](https://hackertube.org) is a video site that plays YouTube videos through an embedded player and uses the YouTube video ID in its URLs. On a HackerTube watch page, click the YouTube Digest icon to open the side panel. The transcript, translation, Overview, explanations, and Notes all work, and the video title comes from the page. Once the video starts playing, the transcript follows playback and clicking a timestamp seeks the video.
 
-Some features need YouTube's own page, because HackerTube's player sits inside a separate YouTube frame that the extension does not touch:
+A few features still need YouTube's own page:
 
 - The **Digest** and note buttons do not appear on the page.
-- Clicking a timestamp does not move the video, and the transcript does not follow playback.
 - The channel name and video description are not read, so AI overviews rely on the title and transcript.
 - Saved notes and timestamp links point to the original video on YouTube.
 
-No extra Chrome permissions are needed for HackerTube.
+Playback following uses a small script inside HackerTube's embedded YouTube player (`youtube-nocookie.com/embed`). It only reports the current time and seeks, and stays inactive when that player is embedded on any other site. Chrome lists this as access to `youtube-nocookie.com`.
 
 ## Supadata free tier and request costs
 

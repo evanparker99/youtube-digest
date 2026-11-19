@@ -33,6 +33,12 @@
       "matches": ["https://www.youtube.com/*"],
       "js": ["content.js"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://www.youtube-nocookie.com/embed/*"],
+      "js": ["embed.js"],
+      "all_frames": true,
+      "run_at": "document_idle"
     }
   ],
   "icons": {
