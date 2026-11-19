@@ -111,8 +111,60 @@ var YTD_SETTINGS = (() => {
     return id && VIDEO_ID_PATTERN.test(id) ? id : null;
   }
 
+  const KEY_CHECK_TIMEOUT_MS = 10_000;
+
+  /**
+   * Checks one key against a free, read-only endpoint.
+   * Returns "valid", "invalid" (401/403), or "unknown" (network error,
+   * timeout, or any other status). Only "invalid" should block saving.
+   */
+  async function checkKey(url, headers, fetchImpl, timeoutMs) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetchImpl(url, {
+        method: "GET",
+        headers,
+        signal: controller.signal,
+      });
+      if (response.ok) return "valid";
+      if (response.status === 401 || response.status === 403) return "invalid";
+      return "unknown";
+    } catch (_error) {
+      return "unknown";
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  /**
+   * Verifies both keys in parallel. Uses DeepSeek's model list and Supadata's
+   * account info, neither of which spends tokens or transcript credits.
+   */
+  async function verifyApiKeys(
+    { aiApiKey, supadataApiKey },
+    { fetchImpl = globalThis.fetch, timeoutMs = KEY_CHECK_TIMEOUT_MS } = {},
+  ) {
+    const [deepseek, supadata] = await Promise.all([
+      checkKey(
+        `${DEFAULTS.aiBaseUrl}/models`,
+        { Authorization: `Bearer ${aiApiKey}` },
+        fetchImpl,
+        timeoutMs,
+      ),
+      checkKey(
+        "https://api.supadata.ai/v1/me",
+        { "x-api-key": supadataApiKey },
+        fetchImpl,
+        timeoutMs,
+      ),
+    ]);
+    return { deepseek, supadata };
+  }
+
   return {
     STORAGE_KEY,
+    verifyApiKeys,
     DEFAULTS,
     isLegacyCustom,
     normalize,

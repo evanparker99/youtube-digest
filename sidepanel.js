@@ -1520,7 +1520,7 @@ async function triggerAnalysis() {
 
     if (!analysisResult.success) {
       if (chapterList)
-        chapterList.innerHTML = `<li class="chapter-item" style="color: var(--accent); border: none;">Analysis failed: ${escapeHtml(analysisResult.error || "Unknown error")}</li>`;
+        chapterList.innerHTML = `<li class="chapter-item" style="color: var(--accent); border: none;">Analysis failed: ${escapeHtml(analysisResult.message || analysisResult.error || "Unknown error")}</li>`;
       isAnalysisLoading = false;
       return;
     }

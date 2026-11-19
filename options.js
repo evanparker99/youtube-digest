@@ -59,6 +59,15 @@ const YTD_OPTIONS = (() => {
       saving: "Saving…",
       addSupadataKey: "Add a Supadata API key.",
       addDeepseekKey: "Add a DeepSeek API key.",
+      verifyingKeys: "Checking your API keys…",
+      invalidSupadataKey:
+        "Supadata rejected this API key. Check it and try again. Nothing was saved.",
+      invalidDeepseekKey:
+        "DeepSeek rejected this API key. Check it and try again. Nothing was saved.",
+      invalidBothKeys:
+        "Supadata and DeepSeek both rejected these API keys. Check them and try again. Nothing was saved.",
+      savedUnverified:
+        "Saved, but the keys could not be checked right now (network issue). They will be checked when you digest a video.",
       saved: "Saved. Reopen YouTube Digest to use these settings.",
       saveFailed: "Could not save settings. Please try again.",
       copying: "Copying…",
@@ -127,6 +136,13 @@ const YTD_OPTIONS = (() => {
       saving: "正在保存…",
       addSupadataKey: "请添加 Supadata API 密钥。",
       addDeepseekKey: "请添加 DeepSeek API 密钥。",
+      verifyingKeys: "正在检查 API 密钥…",
+      invalidSupadataKey: "Supadata 拒绝了这个 API 密钥。请检查后重试，本次未保存。",
+      invalidDeepseekKey: "DeepSeek 拒绝了这个 API 密钥。请检查后重试，本次未保存。",
+      invalidBothKeys:
+        "Supadata 和 DeepSeek 都拒绝了这些 API 密钥。请检查后重试，本次未保存。",
+      savedUnverified:
+        "已保存，但暂时无法检查密钥（网络问题）。分析视频时会再次检查。",
       saved: "已保存。请重新打开 YouTube Digest 以使用这些设置。",
       saveFailed: "无法保存设置，请重试。",
       copying: "正在复制…",
@@ -356,6 +372,7 @@ const YTD_OPTIONS = (() => {
     );
     const copyStatus = doc.getElementById("copyStatus");
     const saveStatus = doc.getElementById("saveStatus");
+    const saveButton = form?.querySelector('button[type="submit"]');
     const dataStatus = doc.getElementById("dataStatus");
     const languageButtons = [...doc.querySelectorAll("[data-language]")];
     const statusStates = new Map();
@@ -458,9 +475,35 @@ const YTD_OPTIONS = (() => {
         return;
       }
 
+      setStatus(saveStatus, "verifyingKeys");
+      if (saveButton) saveButton.disabled = true;
+      let verification;
+      try {
+        verification = await settingsApi.verifyApiKeys(settings);
+      } finally {
+        if (saveButton) saveButton.disabled = false;
+      }
+
+      const supadataInvalid = verification.supadata === "invalid";
+      const deepseekInvalid = verification.deepseek === "invalid";
+      if (supadataInvalid || deepseekInvalid) {
+        setStatus(
+          saveStatus,
+          supadataInvalid && deepseekInvalid
+            ? "invalidBothKeys"
+            : supadataInvalid
+              ? "invalidSupadataKey"
+              : "invalidDeepseekKey",
+        );
+        (supadataInvalid ? supadataApiKeyInput : aiApiKeyInput).focus();
+        return;
+      }
+
       try {
         await storage.set({ [settingsApi.STORAGE_KEY]: settings });
-        setStatus(saveStatus, "saved");
+        const verified =
+          verification.supadata === "valid" && verification.deepseek === "valid";
+        setStatus(saveStatus, verified ? "saved" : "savedUnverified");
       } catch (_error) {
         setStatus(saveStatus, "saveFailed");
       }
