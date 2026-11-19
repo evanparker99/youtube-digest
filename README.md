@@ -99,7 +99,7 @@ Keys and settings are stored in Chrome's local extension storage on your device.
 
 ## Use YouTube Digest
 
-1. Open a standard YouTube watch page with captions.
+1. Open a standard YouTube watch page with captions, or a [HackerTube](https://hackertube.org) watch page.
 2. Click the YouTube Digest extension icon to open the side panel.
 3. Read the timestamped transcript, or choose **Original**, **中文**, or **双语**.
 4. Open **Overview** when you want AI-generated chapters and key quotes.
@@ -110,6 +110,7 @@ Keys and settings are stored in Chrome's local extension storage on your device.
 
 - Google Chrome 116 or newer, using the Side Panel API.
 - Standard `youtube.com/watch` video pages.
+- [HackerTube](https://hackertube.org) watch pages (`hackertube.org/watch/<id>`). See below for what works there.
 - Native subtitle tracks returned by Supadata. YouTube Digest prefers English when available, but may show another native language.
 - Original, Simplified Chinese, and aligned bilingual transcript views.
 - AI overviews, selected-text explanations, translation, and automatic note polishing.
@@ -119,6 +120,19 @@ Keys and settings are stored in Chrome's local extension storage on your device.
 Shorts, live streams, private or access-restricted videos, and videos without an available native transcript may not work. Firefox, Safari, mobile browsers, and other Chromium browsers are not currently tested or supported.
 
 YouTube Digest forces Supadata's `mode=native`. It does not request AI-generated transcripts or perform local audio transcription when native captions are unavailable.
+
+### HackerTube
+
+[HackerTube](https://hackertube.org) is a video site that plays YouTube videos through an embedded player and uses the YouTube video ID in its URLs. On a HackerTube watch page, click the YouTube Digest icon to open the side panel. The transcript, translation, Overview, explanations, and Notes all work, and the video title comes from the page.
+
+Some features need YouTube's own page, because HackerTube's player sits inside a separate YouTube frame that the extension does not touch:
+
+- The **Digest** and note buttons do not appear on the page.
+- Clicking a timestamp does not move the video, and the transcript does not follow playback.
+- The channel name and video description are not read, so AI overviews rely on the title and transcript.
+- Saved notes and timestamp links point to the original video on YouTube.
+
+No extra Chrome permissions are needed for HackerTube.
 
 ## Supadata free tier and request costs
 
@@ -194,7 +208,7 @@ There is no YouTube Digest account system, advertising, analytics, or telemetry.
 
 ### The side panel does not open
 
-- Confirm that you are on a standard `https://www.youtube.com/watch?...` page.
+- Confirm that you are on a standard `https://www.youtube.com/watch?...` page or a `https://hackertube.org/watch/...` page.
 - At `chrome://extensions`, confirm YouTube Digest is enabled and click **Reload**.
 - Refresh the YouTube tab after reloading the extension.
 - Ask your coding agent to inspect the extension if the problem continues.

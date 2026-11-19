@@ -101,7 +101,7 @@ API Key 和设置保存在你设备上的 Chrome 扩展本地存储中。发布�
 
 ## 使用 YouTube Digest
 
-1. 打开一个有字幕的普通 YouTube 视频页面。
+1. 打开一个有字幕的普通 YouTube 视频页面，或 [HackerTube](https://hackertube.org) 视频页面。
 2. 点击 YouTube Digest 扩展图标，打开侧边栏。
 3. 阅读带时间戳的字幕，或选择 **Original**、**中文**、**双语**。
 4. 打开 **Overview**，查看 AI 生成的章节和重点引用。
@@ -112,6 +112,7 @@ API Key 和设置保存在你设备上的 Chrome 扩展本地存储中。发布�
 
 - Chrome 116 或更高版本。
 - 标准的 `youtube.com/watch` 视频页面。
+- [HackerTube](https://hackertube.org) 视频页面（`hackertube.org/watch/<id>`）。可用功能见下文。
 - Supadata 能够返回的原生字幕。YouTube Digest 会优先请求英文字幕，也可能显示其他可用的原生语言。
 - 原文、简体中文和双语对照字幕。
 - AI 概览、选中文本讲解、翻译和自动润色笔记。
@@ -121,6 +122,19 @@ API Key 和设置保存在你设备上的 Chrome 扩展本地存储中。发布�
 Shorts、直播、私密视频、受访问限制的视频，以及没有原生字幕的视频可能无法使用。目前没有测试 Firefox、Safari、移动浏览器或其他 Chromium 浏览器。
 
 YouTube Digest 强制使用 Supadata 的 `mode=native`，不会在没有原生字幕时请求 AI 生成转录，也不会在本地转录音频。
+
+### HackerTube
+
+[HackerTube](https://hackertube.org) 是一个通过内嵌播放器播放 YouTube 视频的网站，网址里使用的就是 YouTube 视频 ID。在 HackerTube 视频页面点击 YouTube Digest 图标即可打开侧边栏。字幕、翻译、Overview、内容讲解和 Notes 都可以使用，视频标题从页面读取。
+
+HackerTube 的播放器嵌在一个独立的 YouTube 框架里，扩展不会操作它，因此以下功能只能在 YouTube 页面上使用：
+
+- 页面上不会出现 **Digest** 按钮和记笔记按钮。
+- 点击时间戳不会跳转视频，字幕也不会跟随播放进度滚动。
+- 不会读取频道名和视频简介，AI 概览只依据标题和字幕。
+- 保存的笔记和时间戳链接指向 YouTube 上的原视频。
+
+使用 HackerTube 不需要额外的 Chrome 权限。
 
 ## Supadata 免费额度和请求成本
 
@@ -196,7 +210,7 @@ YouTube Digest 没有账号系统、广告、分析统计或行为追踪。Supad
 
 ### 侧边栏无法打开
 
-- 确认你打开的是标准 `https://www.youtube.com/watch?...` 页面。
+- 确认你打开的是标准 `https://www.youtube.com/watch?...` 页面，或 `https://hackertube.org/watch/...` 页面。
 - 在 `chrome://extensions` 中确认 YouTube Digest 已启用，并点击“重新加载”。
 - 重新加载扩展后，刷新 YouTube 页面。
 - 如果问题仍然存在，让你的编程 Agent 检查扩展。
